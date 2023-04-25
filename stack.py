@@ -44,7 +44,7 @@ class Ec2GpuStack(core.Stack):
             "systemctl enable docker",
             "docker pull nvidia/cuda:latest",
             "mkdir -p /app",
-            "curl -o /app/docker-compose.yml https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME/main/docker-compose.yml",
+            "curl -o /app/docker-compose.yml https://raw.githubusercontent.com/maxpastor/Track-Anything-on-AWS/main/docker-compose.yml",
             "docker-compose -f /app/docker-compose.yml up -d",
         )
 
