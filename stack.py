@@ -1,6 +1,5 @@
 from aws_cdk import (
     aws_ec2 as ec2,
-    aws_iam as iam,
     core,
 )
 
@@ -22,17 +21,6 @@ class Ec2GpuStack(core.Stack):
         )
         security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(80))
 
-        # Create an IAM role for the instance
-        instance_role = iam.Role(
-            self,
-            "InstanceRole",
-            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
-        )
-
-        # Grant permissions to access Amazon S3
-        instance_role.add_managed_policy(
-            iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess")
-        )
 
         # Define the user data script
         user_data = ec2.UserData.for_linux()
@@ -61,6 +49,5 @@ class Ec2GpuStack(core.Stack):
             ),
             vpc=vpc,
             security_group=security_group,
-            role=instance_role,
             user_data=user_data,
         )
