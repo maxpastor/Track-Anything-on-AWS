@@ -27,13 +27,18 @@ class SegmentAnythingStack(core.Stack):
         user_data = ec2.UserData.for_linux()
         user_data.add_commands(
     "yum update -y",
-    "yum install -y docker",
+    "amazon-linux-extras install docker",
     "systemctl start docker",
     "systemctl enable docker",
     "yum install -y git",
     "amazon-linux-extras install -y amazon-ssm-agent",
     "systemctl start amazon-ssm-agent",
     "systemctl enable amazon-ssm-agent",
+    "distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+   && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.repo | tee /etc/yum.repos.d/nvidia-container-toolkit.repo",
+    "yum clean expire-cache",
+    "nvidia-ctk runtime configure --runtime=docker",
+    "systemctl restart docker",
     "curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose",
     "chmod +x /usr/local/bin/docker-compose",
     "git clone https://github.com/maxpastor/Track-Anything-on-AWS.git /app",
