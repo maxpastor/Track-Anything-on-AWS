@@ -1,4 +1,4 @@
-FROM nvidia/cuda:latest
+FROM pytorch/pytorch:latest
 
 # Install system packages
 RUN apt-get update && apt-get install -y git python3-pip curl

@@ -1,9 +1,10 @@
 from aws_cdk import (
     aws_ec2 as ec2,
+    aws_iam as iam,
     core,
 )
 
-class Ec2GpuStack(core.Stack):
+class SegmentAnythingStack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -25,15 +26,28 @@ class Ec2GpuStack(core.Stack):
         # Define the user data script
         user_data = ec2.UserData.for_linux()
         user_data.add_commands(
-            "apt-get update",
-            "apt-get -y upgrade",
-            "apt-get -y install docker.io",
-            "systemctl start docker",
-            "systemctl enable docker",
-            "docker pull nvidia/cuda:latest",
-            "mkdir -p /app",
-            "curl -o /app/docker-compose.yml https://raw.githubusercontent.com/maxpastor/Track-Anything-on-AWS/main/docker-compose.yml",
-            "docker-compose -f /app/docker-compose.yml up -d",
+    "yum update -y",
+    "yum install -y docker",
+    "systemctl start docker",
+    "systemctl enable docker",
+    "yum install -y git",
+    "amazon-linux-extras install -y amazon-ssm-agent",
+    "systemctl start amazon-ssm-agent",
+    "systemctl enable amazon-ssm-agent",
+    "curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose",
+    "chmod +x /usr/local/bin/docker-compose",
+    "git clone https://github.com/maxpastor/Track-Anything-on-AWS.git /app",
+    "cd /app",
+    "docker-compose up -d",
+)
+        instance_role = iam.Role(
+            self,
+            "InstanceRole",
+            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
+        )
+        # Grant permissions for Systems Manager (SSM) access and reporting
+        instance_role.add_managed_policy(
+            iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
         )
 
         # Create the EC2 instance
@@ -50,4 +64,12 @@ class Ec2GpuStack(core.Stack):
             vpc=vpc,
             security_group=security_group,
             user_data=user_data,
+            role=instance_role,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
+        )
+        core.CfnOutput(
+            self,
+            "InstancePublicDnsName",
+            value=instance.instance_public_dns_name,
+            description="The public DNS address of the instance",
         )
