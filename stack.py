@@ -65,7 +65,16 @@ class SegmentAnythingStack(core.Stack):
             security_group=security_group,
             user_data=user_data,
             role=instance_role,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            block_devices=[
+                ec2.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=ec2.BlockDeviceVolume.ebs(
+                        200,  # Volume size in GiB
+                        volume_type=ec2.EbsDeviceVolumeType.GP3,  # General Purpose SSD
+                    ),
+                ),
+            ],
         )
         core.CfnOutput(
             self,
